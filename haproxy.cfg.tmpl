@@ -53,8 +53,8 @@ backend asterisk
   timeout check 500ms
   # Wait 500ms between checks.
 
-  {{range $server := .app_servers}}
-  server {{Base $server.Key}} {{$server.Value}}:8089 check inter 500ms
+  {{range $app := lsdir "/haproxy/asterisk"}}
+  server {{base $server.Key}} {{$server.Value}}:8089 check inter 500ms
   {{end}}
 
 # For displaying HAProxy statistics.
