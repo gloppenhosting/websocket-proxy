@@ -35,7 +35,7 @@ frontend asterisk
   rspadd Strict-Transport-Security:\ max-age=31536000;\ includeSubdomains;\ preload
   rspadd X-Frame-Options:\ DENY
   http-response set-header X-Content-Type-Options nosniff
-  bind :443 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
+  bind :8089 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
 
   default_backend asterisk
 
@@ -49,7 +49,6 @@ backend asterisk
   option httpchk GET /httpstatus
   timeout check 500ms
   # Wait 500ms between checks.
-
   {{range gets "/haproxy/asterisk/*"}}
   server {{base .Key}} {{.Value}}:8089 check inter 500ms
   {{end}}
