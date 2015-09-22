@@ -54,10 +54,6 @@ backend asterisk
   server {{.Key}} {{.Value}}:8089 check inter 500ms
   {{end}}
 
-  {{range $server := .haproxy_asterisk}}
-  server {{base $server.Key}} {{$server.Value}}:8089 check inter 500ms
-  {{end}}
-
 # For displaying HAProxy statistics.
 frontend stats
   # HTTPS only.
