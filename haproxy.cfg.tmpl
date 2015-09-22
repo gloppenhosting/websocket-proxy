@@ -1,0 +1,71 @@
+global
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+  user haproxy
+  group haproxy
+  daemon
+  nbproc 2
+  pidfile /var/run/haproxy-private.pid
+  ca-base /etc/ssl
+  crt-base /etc/ssl
+  ssl-default-bind-ciphers EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH
+  ssl-default-bind-options no-sslv3 no-tls-tickets
+  tune.ssl.default-dh-param 2048
+
+defaults
+  log global
+  maxconn 4096
+  mode http
+  # Add x-forwarded-for header.
+  option forwardfor
+  option http-server-close
+  timeout connect 5s
+  timeout client 30s
+  timeout server 30s
+  # Long timeout for WebSocket connections.
+  timeout tunnel 1h
+
+frontend asterisk
+  # HTTP
+  bind :80
+  # Redirect all HTTP traffic to HTTPS
+  redirect scheme https if !{ ssl_fc }
+
+  # HTTPS
+  # Example with CA certificate bundle
+  # bind :443 ssl crt cert.pem ca-file bundle.crt
+  # Example without CA certification bunch
+  rspadd Strict-Transport-Security:\ max-age=31536000;\ includeSubdomains;\ preload
+  rspadd X-Frame-Options:\ DENY
+  http-response set-header X-Content-Type-Options nosniff
+  bind :443 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
+
+  default_backend asterisk
+
+backend asterisk
+  # Tell the backend that this is a secure connection,
+  # even though it's getting plain HTTP.
+  reqadd X-Forwarded-Proto:\ https
+
+  balance leastconn
+  # Check by hitting a page intended for this use.
+  option httpchk GET /httpstatus
+  timeout check 500ms
+  # Wait 500ms between checks.
+
+  {{range $server := .app_servers}}
+  server {{Base $server.Key}} {{$server.Value}}:8089 check inter 500ms
+  {{end}}
+
+# For displaying HAProxy statistics.
+frontend stats
+  # HTTPS only.
+  bind :1936 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
+  default_backend stats
+
+backend stats
+  stats enable
+  stats hide-version
+  stats realm Haproxy Statistics
+  stats uri /
+  stats auth admin:password
