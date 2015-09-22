@@ -4,7 +4,9 @@
 chown haproxy:haproxy "$RUNDIR"
 chmod 2775 "$RUNDIR"
 
-export ETCD=${HOST_HOST:-172.17.42.1}
+export ETCD_PORT=${ETCD_PORT:-4001}
+export HOST_IP=${HOST_IP:-172.17.42.1}
+export ETCD=127.0.0.1:4001
 
 echo "[haproxy-confd] booting container. ETCD: $ETCD"
 
