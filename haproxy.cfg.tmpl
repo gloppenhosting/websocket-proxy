@@ -51,7 +51,7 @@ backend asterisk
   # Wait 500ms between checks.
 
   {{range gets "/haproxy/asterisk/*"}}
-  server {{.Key}} {{.Value}}:8089 check inter 500ms
+  server {{base .Key}} {{.Value}}:8089 check inter 500ms
   {{end}}
 
 # For displaying HAProxy statistics.
