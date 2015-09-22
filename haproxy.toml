@@ -1,6 +1,6 @@
 [template]
 src = "haproxy.cfg.tmpl"
-dest = "/usr/local/etc/haproxy/haproxy.cfg"
+dest = "/etc/haproxy/haproxy.cfg"
 keys = [
   "/haproxy/asterisk",
 ]
