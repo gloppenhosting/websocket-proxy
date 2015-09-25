@@ -24,4 +24,4 @@ RUN cat private/ssl-cert-snakeoil.key certs/ssl-cert-snakeoil.pem > snakeoil.pem
 # VOLUME /etc/confd
 
 # Lets go
-CMD ["/entrypoint.sh"]
+CMD ["/start.sh"]
