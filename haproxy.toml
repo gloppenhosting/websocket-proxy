@@ -3,5 +3,6 @@ src = "haproxy.cfg.tmpl"
 dest = "/etc/haproxy/haproxy.cfg"
 keys = [
   "/haproxy/asterisk",
+  "/galera/",
 ]
 reload_cmd = "haproxy -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -d -D -sf $(cat /var/run/haproxy.pid)"

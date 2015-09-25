@@ -39,6 +39,10 @@ frontend asterisk
 
   default_backend asterisk
 
+frontend asterisk
+  bind :3306
+  default_backend galera-cluster
+
 backend asterisk
   # Tell the backend that this is a secure connection,
   # even though it's getting plain HTTP.
@@ -49,11 +53,17 @@ backend asterisk
   option httpchk GET /httpstatus
   timeout check 500ms
   # Wait 500ms between checks.
-  {{range gets "/haproxy/asterisk/*"}}
-  server {{base .Key}} {{.Value}}:8089 check inter 500ms
-  {{end}}
+{{range gets "/haproxy/asterisk/*"}}  server {{base .Key}} {{.Value}}:8089 check inter 500ms
+{{end}}
 
-# For displaying HAProxy statistics.
+backend galera-cluster
+  mode tcp
+  balance source
+  option tcplog
+  option httpchk
+{{ range $node_name := gets "/galera/*" }} server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 check port 8000 inter 12000 rise 3 fall 3
+{{ end }}
+
 frontend stats
   # HTTPS only.
   bind :1936 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
@@ -65,3 +75,4 @@ backend stats
   stats realm Haproxy Statistics
   stats uri /
   stats auth admin:password
+  stats refresh 5s

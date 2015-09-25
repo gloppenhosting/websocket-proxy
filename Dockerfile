@@ -21,7 +21,7 @@ WORKDIR /etc/ssl
 RUN cat private/ssl-cert-snakeoil.key certs/ssl-cert-snakeoil.pem > snakeoil.pem
 
 # Set volume for confd
-VOLUME /etc/confd
+# VOLUME /etc/confd
 
 # Lets go
-CMD ["/bin/bash","/start.sh"]
+CMD ["/start.sh"]
