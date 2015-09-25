@@ -17,15 +17,6 @@ global
 defaults
   log global
   maxconn 4096
-  mode http
-  # Add x-forwarded-for header.
-  option forwardfor
-  option http-server-close
-  timeout connect 5s
-  timeout client 30s
-  timeout server 30s
-  # Long timeout for WebSocket connections.
-  timeout tunnel 1h
 
 frontend asterisk
   # HTTPS
@@ -51,6 +42,17 @@ backend asterisk
   balance leastconn
   # Check by hitting a page intended for this use.
   option httpchk GET /httpstatus
+
+  mode http
+  # Add x-forwarded-for header.
+  option forwardfor
+  option http-server-close
+  timeout connect 5s
+  timeout client 30s
+  timeout server 30s
+  # Long timeout for WebSocket connections.
+  timeout tunnel 1h
+
   timeout check 500ms
   # Wait 500ms between checks.
 {{range gets "/haproxy/asterisk/*"}}  server {{base .Key}} {{.Value}}:8089 check inter 500ms
@@ -61,6 +63,11 @@ backend galera-cluster
   balance source
   option tcplog
   option httpchk
+  option dontlognull
+  option redispatch
+  retries 3
+  timeout client 361s
+  timeout server 361s
 {{ range $node_name := gets "/galera/*" }} server {{ base $node_name.Key }} {{ $node_name.Value }}:3306 check port 8000 inter 12000 rise 3 fall 3
 {{ end }}
 
