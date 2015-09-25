@@ -6,8 +6,7 @@ global
   user haproxy
   group haproxy
   daemon
-  #nbproc 2
-  spread-checks 5
+  nbproc 2
   pidfile /var/run/haproxy.pid
   ca-base /etc/ssl
   crt-base /etc/ssl
@@ -18,6 +17,15 @@ global
 defaults
   log global
   maxconn 4096
+  mode http
+  # Add x-forwarded-for header.
+  option forwardfor
+  option http-server-close
+  timeout connect 5s
+  timeout client 30s
+  timeout server 30s
+  # Long timeout for WebSocket connections.
+  timeout tunnel 1h
 
 frontend asterisk
   # HTTPS
@@ -43,17 +51,6 @@ backend asterisk
   balance leastconn
   # Check by hitting a page intended for this use.
   option httpchk GET /httpstatus
-
-  mode http
-  # Add x-forwarded-for header.
-  option forwardfor
-  option http-server-close
-  timeout connect 5s
-  timeout client 30s
-  timeout server 30s
-  # Long timeout for WebSocket connections.
-  timeout tunnel 1h
-
   timeout check 500ms
   # Wait 500ms between checks.
 {{range gets "/haproxy/asterisk/*"}}  server {{base .Key}} {{.Value}}:8089 check inter 500ms
@@ -77,16 +74,7 @@ frontend stats
   bind :1936 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
   default_backend stats
 
-  mode http
-  # Add x-forwarded-for header.
-  option forwardfor
-  option http-server-close
-  timeout connect 5s
-  timeout client 30s
-  timeout server 30s
-  # Long timeout for WebSocket connections.
-  timeout tunnel 1h
-
+backend stats
   stats enable
   stats hide-version
   stats realm Haproxy Statistics
