@@ -6,7 +6,8 @@ global
   user haproxy
   group haproxy
   daemon
-  nbproc 2
+  #nbproc 2
+  spread-checks 5
   pidfile /var/run/haproxy.pid
   ca-base /etc/ssl
   crt-base /etc/ssl
@@ -76,7 +77,16 @@ frontend stats
   bind :1936 ssl crt snakeoil.pem ciphers AES128+EECDH:AES128+EDH force-tlsv12 no-sslv3
   default_backend stats
 
-backend stats
+  mode http
+  # Add x-forwarded-for header.
+  option forwardfor
+  option http-server-close
+  timeout connect 5s
+  timeout client 30s
+  timeout server 30s
+  # Long timeout for WebSocket connections.
+  timeout tunnel 1h
+
   stats enable
   stats hide-version
   stats realm Haproxy Statistics
